@@ -1,14 +1,32 @@
-import { randomUUID } from "node:crypto";
-import { readDB, writeDB } from "./db";
+import { supabase } from "./supabase";
 import type { Comment } from "./types";
 
+interface CommentRow {
+  id: string;
+  post_id: string;
+  author: string;
+  content: string;
+  created_at: string;
+}
+
+function mapComment(row: CommentRow): Comment {
+  return {
+    id: row.id,
+    postId: row.post_id,
+    author: row.author,
+    content: row.content,
+    createdAt: row.created_at,
+  };
+}
+
 export async function getCommentsByPostId(postId: string): Promise<Comment[]> {
-  const db = await readDB();
-  return db.comments
-    .filter((c) => c.postId === postId)
-    .sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    );
+  const { data, error } = await supabase
+    .from("comments")
+    .select("*")
+    .eq("post_id", postId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((row) => mapComment(row as CommentRow));
 }
 
 export interface CommentInput {
@@ -18,21 +36,20 @@ export interface CommentInput {
 }
 
 export async function addComment(input: CommentInput): Promise<Comment> {
-  const db = await readDB();
-  const comment: Comment = {
-    id: randomUUID(),
-    postId: input.postId,
-    author: input.author,
-    content: input.content,
-    createdAt: new Date().toISOString(),
-  };
-  db.comments.push(comment);
-  await writeDB(db);
-  return comment;
+  const { data, error } = await supabase
+    .from("comments")
+    .insert({
+      post_id: input.postId,
+      author: input.author,
+      content: input.content,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return mapComment(data as CommentRow);
 }
 
 export async function deleteComment(id: string): Promise<void> {
-  const db = await readDB();
-  db.comments = db.comments.filter((c) => c.id !== id);
-  await writeDB(db);
+  const { error } = await supabase.from("comments").delete().eq("id", id);
+  if (error) throw error;
 }

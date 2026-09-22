@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,9 @@ export function PostForm({
 }) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(action, initialState);
+  const [title, setTitle] = useState(post?.title ?? "");
+  const [author, setAuthor] = useState(post?.author ?? "");
+  const [content, setContent] = useState(post?.content ?? "");
 
   useEffect(() => {
     if (state.success && state.id) {
@@ -45,7 +48,8 @@ export function PostForm({
         <Input
           id="title"
           name="title"
-          defaultValue={post?.title}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           placeholder="제목을 입력하세요"
           required
         />
@@ -58,7 +62,8 @@ export function PostForm({
         <Input
           id="author"
           name="author"
-          defaultValue={post?.author}
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
           placeholder="이름을 입력하세요"
           required
         />
@@ -71,7 +76,8 @@ export function PostForm({
         <Textarea
           id="content"
           name="content"
-          defaultValue={post?.content}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
           placeholder="내용을 입력하세요"
           rows={12}
           required

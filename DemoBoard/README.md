@@ -1,5 +1,17 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Supabase setup
+
+Posts and comments are stored in Supabase (Postgres).
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. Open the SQL Editor and run `supabase/schema.sql` (creates the `posts`/`comments` tables, RLS policies, and seed data).
+3. Copy `.env.local.example` to `.env.local` and fill in your project's URL and anon key (Project Settings → API):
+
+```bash
+cp .env.local.example .env.local
+```
+
 ## Getting Started
 
 First, run the development server:
